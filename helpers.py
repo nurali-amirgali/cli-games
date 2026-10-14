@@ -5,6 +5,11 @@ BLUE   = "\033[34m"
 BOLD   = "\033[1m"
 WHITE  = "\033[0m"
 
+RED_BG   = "\033[41m"
+GREEN_BG = "\033[42m"
+WHITE_BG = "\033[47m"
+RESET    = "\033[0m"
+
 try:
     import msvcrt
     def key_pressed():
