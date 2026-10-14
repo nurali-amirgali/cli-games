@@ -17,16 +17,24 @@ class Display:
     def init(self):
         self._savedSettings = termios.tcgetattr(self.fd)
         tty.setcbreak(self.fd)
-        print("\033[2J\033[H\033[?25l", end="", flush=True)
+        #print("\033[2J\033[H\033[?25l", end="", flush=True)
+        print("\033[?1049h\033[2J\033[H\033[?25l", end="", flush=True)
         
     def closeDisplay(self):
         termios.tcsetattr(self.fd, termios.TCSADRAIN, self._savedSettings)
+        #print("\033[?25h", end="", flush=True)
+        print("\033[?25h\033[?1049l", end="", flush=True)
+        
+    def hideCursor(self):
+        print("\033[?25l", end="", flush=True)
+    
+    def showCursor(self):
         print("\033[?25h", end="", flush=True)
         
-    def _cursor_home(self):
+    def cursorHome(self):
         print("\033[H", end="", flush=True)
         
-    def get_keys(self):
+    def getKeys(self):
         if not select.select([self.fd], [], [], 0)[0]:
             return []
         data = os.read(self.fd, 1024).decode(errors="ignore")
@@ -40,7 +48,7 @@ class Display:
         self.tiles = [[color] * self.boardWidth for _ in range(self.boardHeight)]
     
     def render(self):
-        self._cursor_home()
+        self.cursorHome()
         for row in range(self.boardHeight):
             for _ in range(self.scale):
                 for col in range(self.boardWidth):
