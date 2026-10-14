@@ -1,26 +1,18 @@
 from helpers import *
 
-BG_COLOR = WHITE_BG
-SNAKE_COLOR = GREEN_BG
-APPLE_COLOR = RED_BG
+BG_COLOR = WHITE
+SNAKE_COLOR = GREEN
+APPLE_COLOR = RED
 
 class snakeBoard:
-    def __init__(self, boardSize = 10):
+    def __init__(self, display, boardSize = 10):
         self.boardSize = boardSize
         self.scale = 2
         self.snake = [(0,0)]
         self.apple = (4,0)
+        self.display = display
     
     def render(self):
-        for row in range(self.boardSize):
-            for _ in range(self.scale):
-                for col in range(self.boardSize):
-                    for _ in range(self.scale * 2):
-                        if (col, row) in self.snake:
-                            color = SNAKE_COLOR
-                        elif (col, row) == self.apple:
-                            color = APPLE_COLOR
-                        else:
-                            color = BG_COLOR
-                        print(f"{color} ", end='')
-                print(RESET)
+        for snakePos in self.snake:
+            self.display.draw(SNAKE_COLOR, snakePos)
+        self.display.draw(APPLE_COLOR, self.apple)
