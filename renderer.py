@@ -5,12 +5,13 @@ KEY_PATTERN = re.compile(r"\x1b\[[ABCD]|.", re.DOTALL)
 ARROWS = {"\x1b[A": "up", "\x1b[B": "down", "\x1b[C": "right", "\x1b[D": "left"}
 
 class Display:
-    def __init__(self, boardWidth = 10, boardHeight = 10, scale = 1):
+    def __init__(self, boardWidth = 10, boardHeight = 10, scale = 1, y = 0):
         self.boardWidth = boardWidth
         self.boardHeight = boardHeight
         self.scale = scale
         self._savedSettings = None
         self.tiles = [[WHITE] * boardWidth for _ in range(boardHeight)]
+        self.y = y
         
         self.fd = sys.stdin.fileno()
     
@@ -31,6 +32,9 @@ class Display:
     def showCursor(self):
         print("\033[?25h", end="", flush=True)
         
+    def cursorGoToY(self, y):
+        print(f"\033[{y + 1};1H", end="", flush=True)
+        
     def cursorHome(self):
         print("\033[H", end="", flush=True)
         
@@ -48,7 +52,7 @@ class Display:
         self.tiles = [[color] * self.boardWidth for _ in range(self.boardHeight)]
     
     def render(self):
-        self.cursorHome()
+        self.cursorGoToY(self.y)
         for row in range(self.boardHeight):
             for _ in range(self.scale):
                 for col in range(self.boardWidth):
