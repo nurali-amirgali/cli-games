@@ -1,6 +1,11 @@
 from helpers import *
 from snake import snakeBoard
+from paddle import paddleBoard
 
-Snake = snakeBoard()
+#Snake = snakeBoard()
 
-Snake.runGame()
+#Snake.runGame()
+
+Paddle = paddleBoard()
+
+Paddle.runGame()
