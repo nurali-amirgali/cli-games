@@ -36,6 +36,7 @@ class snakeBoard:
         self.dir = RIGHT
         
         self.isImprovement = False
+        self.isSame = False
         self.score = 0
         self.bestScore = 0
         self.gameOver = False
@@ -122,6 +123,7 @@ class snakeBoard:
         self.nextDir = RIGHT
         self.dir = RIGHT
         self.isImprovement = False
+        self.isSame = False
         
         self.score = 0
         self.gameOver = False
@@ -145,11 +147,21 @@ class snakeBoard:
                     if self.score > self.bestScore:
                         self.bestScore = self.score
                         self.isImprovement = True
+                    elif self.score == self.bestScore:
+                        self.isSame = True
                     
-                    scoreColor = GREEN_TEXT if self.isImprovement else RED_TEXT
+                    if self.isImprovement:
+                        scoreColor = GREEN_TEXT
+                    elif self.isSame:
+                        scoreColor = YELLOW_TEXT
+                    else:
+                        scoreColor = RED_TEXT
                     self.printLabel(f"SCORE: {self.score}", scoreColor, BLACK, (self.boardSize * self.scale * 2))
                     self.printLabel(f"BEST: {self.bestScore}", CYAN_TEXT, BLACK, (self.boardSize * self.scale * 2))
-                    print(f"press anything to restart\nor press Q to exit")
+                    self.printLabel(f" ", CYAN_TEXT, BLACK, (self.boardSize * self.scale * 2))
+                    self.printLabel(f"Click to restart", MAGENTA_TEXT, BLACK, (self.boardSize * self.scale * 2))
+                    self.printLabel(f" ", CYAN_TEXT, BLACK, (self.boardSize * self.scale * 2))
+                    self.printLabel(f"Click Q to quit!", RED_TEXT, BLACK, (self.boardSize * self.scale * 2))
                 else:
                     print("\033[J", end="", flush=True)
             
