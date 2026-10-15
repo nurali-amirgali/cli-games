@@ -1,4 +1,9 @@
-currentDir = 3
+UP = 0
+LEFT = 1
+DOWN = 2
+RIGHT = 3
+
+currentDir = RIGHT
 
 for i in range(4):
     print("---------",i)
