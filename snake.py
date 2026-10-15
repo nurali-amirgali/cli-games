@@ -25,6 +25,8 @@ class snakeBoard:
         self.nextDir = RIGHT
         self.dir = RIGHT
         
+        self.score = 0
+        self.gameOver = False
         self.extend = False
         self.directionDict = {
             UP:(0,-1),
@@ -55,21 +57,33 @@ class snakeBoard:
         
         x, y = self.snake[-1]
         newPos = (x + dx, y + dy)
-        print(newPos)
+        
+        if newPos[0] < 0 or newPos[0] > (self.boardSize - 1) or newPos[1] < 0 or newPos[1] > (self.boardSize - 1):
+            self.gameOver = True
+            return
+        
+        if newPos in self.snake:
+            self.gameOver = True
+            return
         
         self.snake.append(newPos)
         if newPos == self.apple:
             self.extend = True
             self.randomizeApple()
+            self.score += 1
         
         if not self.extend:
             del self.snake[0]
         else:
             self.extend = False
+        print(self.score)
     
     def runGame(self):
         self.display.init()
         while True:
+            if self.gameOver:
+                break
+            
             timePassed = time.perf_counter() - self.lastTickTime
             if timePassed >= (self.tickDelay/1000):
                 self.update()
