@@ -11,7 +11,7 @@ SNAKE_HEAD = MOSS
 TOP_BAR_BG = BLACK
 TOP_BAR_TEXT = WHITE_TEXT
 
-DEATH_TOP_BG = RED
+DEATH_TOP_BG = "\033[48;5;160m"
 DEATH_TOP_TEXT = WHITE_TEXT
 DEATH_BG_COLOR = "\033[48;5;252m"
 DEATH_SNAKE_COLOR = "\033[48;5;243m"
@@ -35,10 +35,12 @@ class snakeBoard:
         self.nextDir = RIGHT
         self.dir = RIGHT
         
+        self.isImprovement = False
         self.score = 0
         self.bestScore = 0
         self.gameOver = False
         self.extend = False
+        self.startScreen = True
         self.directionDict = {
             UP:(0,-1),
             DOWN:(0,1),
@@ -48,7 +50,12 @@ class snakeBoard:
     
     def renderScore(self):
         self.display.cursorHome()
-        scoreText = f"Score: {self.score}" if not self.gameOver else f"GAME OVER"
+        if self.gameOver:
+            scoreText = "GAME OVER"
+        elif self.startScreen:
+            scoreText = "PRESS TO START"
+        else:
+            scoreText = f"Score: {self.score}"
         textLen = max((self.boardSize * self.scale * 2) - len(scoreText), 0)
         text = (" " * math.floor(textLen/2)) + scoreText + (" " * math.ceil(textLen/2))
         
@@ -73,6 +80,13 @@ class snakeBoard:
             else:
                 self.display.draw(SNAKE_COLOR if not self.gameOver else DEATH_SNAKE_COLOR, snakePos)
         self.display.draw(APPLE_COLOR if not self.gameOver else DEATH_APPLE_COLOR, self.apple)
+    
+    def printLabel(self, text, color, bgColor, width):
+        textLen = max(width - len(text), 0)
+        text = (" " * math.floor(textLen/2)) + text + (" " * math.ceil(textLen/2))
+        
+        textColors = bgColor + BOLD_TEXT + color
+        print(textColors + text + RESET)
     
     def update(self):
         dx, dy = self.directionDict[self.nextDir]
@@ -107,17 +121,19 @@ class snakeBoard:
         self.tickDelay = 200 #in milliseconds
         self.nextDir = RIGHT
         self.dir = RIGHT
+        self.isImprovement = False
         
         self.score = 0
         self.gameOver = False
         self.extend = False
+        self.startScreen = True
         
     def runGame(self):
         self.display.init()
         while True:
             timePassed = time.perf_counter() - self.lastTickTime
             if timePassed >= (self.tickDelay/1000):
-                if not self.gameOver:
+                if not self.gameOver and not self.startScreen:
                     self.update()
                 self.lastTickTime = time.perf_counter()
                 self.display.fill(BG_COLOR if not self.gameOver else DEATH_BG_COLOR)
@@ -128,8 +144,11 @@ class snakeBoard:
                 if self.gameOver:
                     if self.score > self.bestScore:
                         self.bestScore = self.score
-                    print(f"SCORE: {self.score}")
-                    print(f"BEST: {self.bestScore}")
+                        self.isImprovement = True
+                    
+                    scoreColor = GREEN_TEXT if self.isImprovement else RED_TEXT
+                    self.printLabel(f"SCORE: {self.score}", scoreColor, BLACK, (self.boardSize * self.scale * 2))
+                    self.printLabel(f"BEST: {self.bestScore}", CYAN_TEXT, BLACK, (self.boardSize * self.scale * 2))
                     print(f"press anything to restart\nor press Q to exit")
                 else:
                     print("\033[J", end="", flush=True)
@@ -138,9 +157,12 @@ class snakeBoard:
             if "q" in keys:
                 break
             
-            if keys and self.gameOver:
-                self.reset()
-                continue
+            if keys:
+                if self.gameOver:
+                    self.reset()
+                    continue
+                elif self.startScreen:
+                    self.startScreen = False
             
             direction = -1
             if "w" in keys:
