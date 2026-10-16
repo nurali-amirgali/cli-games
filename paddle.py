@@ -22,15 +22,27 @@ class paddleBoard:
         self.paddleUserY = 10
         self.paddleBotY = 10
         self.paddleOffsetX = 2
+        self.paddleSpeed = 1
         
         self.ballPos = (round(boardWidth/2), round(boardHeight/2))
-        self.ballVelocity = (0.01, 0)
+        self.ballVelocity = (0.01, 0.01)
+        self.ballSpeed = 0.01
+        
+        self.randomizeBallVelocity()
+    
+    def randomizeBallVelocity(self):
+        angle = random.uniform(0, 2 * math.pi)
+
+        dx = math.cos(angle) * self.ballSpeed
+        dy = math.sin(angle) * self.ballSpeed
+        
+        self.ballVelocity = (dx, dy)
     
     def renderPaddle(self):
         for x in range(self.paddleWidth):
             for y in range(self.paddleHeight):
                 drawPos = (x + self.paddleOffsetX, y + self.paddleUserY)
-                self.display.draw(BLACK, drawPos)
+                self.display.draw(MOSS, drawPos)
     
     def renderBall(self):
         drawPos = (round(self.ballPos[0]), round(self.ballPos[1]))
@@ -67,5 +79,10 @@ class paddleBoard:
             keys = self.display.getKeys()
             if "q" in keys:
                 break
+            
+            if "w" in keys or "UP" in keys:
+                self.paddleUserY =  max(self.paddleUserY - self.paddleSpeed, 0)
+            if "s" in keys or "DOWN" in keys:
+                self.paddleUserY =  min(self.paddleUserY + self.paddleSpeed, (self.boardHeight - self.paddleHeight))
         
         self.display.closeDisplay()     
