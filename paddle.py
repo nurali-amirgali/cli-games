@@ -24,7 +24,7 @@ class paddleBoard:
         self.paddleOffsetX = 2
         
         self.ballPos = (round(boardWidth/2), round(boardHeight/2))
-        self.ballVelocity = (1, 0)
+        self.ballVelocity = (0.01, 0)
     
     def renderPaddle(self):
         for x in range(self.paddleWidth):
@@ -33,10 +33,17 @@ class paddleBoard:
                 self.display.draw(BLACK, drawPos)
     
     def renderBall(self):
-        pass
+        drawPos = (round(self.ballPos[0]), round(self.ballPos[1]))
+        self.display.draw(RED, drawPos)
     
     def render(self):
         self.renderPaddle()
+        self.renderBall()
+        
+    def updateBall(self):
+        x, y = self.ballPos
+        dx, dy = self.ballVelocity
+        self.ballPos = (x + dx, y + dy)
     
     def update(self):
         pass
@@ -49,6 +56,8 @@ class paddleBoard:
         while True:
             timePassed = time.perf_counter() - self.lastTickTime
             if timePassed >= (self.tickDelay/1000):
+                self.updateBall()
+                
                 self.display.fill(BG_COLOR)
                 
                 self.render()

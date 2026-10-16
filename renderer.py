@@ -46,7 +46,10 @@ class Display:
     
     def draw(self, color, pos):
         x, y = pos
-        self.tiles[y][x] = color
+        try:
+            self.tiles[y][x] = color
+        except Exception:
+            return
     
     def fill(self, color):
         self.tiles = [[color] * self.boardWidth for _ in range(self.boardHeight)]
