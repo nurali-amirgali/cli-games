@@ -29,14 +29,14 @@ class paddleBoard:
         self.paddleUserY = 10
         self.paddleBotY = 10
         self.paddleOffsetX = 2
-        self.paddleSpeed = 0.05
+        self.paddleSpeed = 0.1
         
         self.testTimes = []
         self.lastKey = time.perf_counter()
         
         self.ballPos = (round(boardWidth/2), round(boardHeight/2))
         self.ballVelocity = (0.01, 0.01)
-        self.ballSpeed = 0.01
+        self.ballSpeed = 0.1
         
         self.randomizeBallVelocity()
     
@@ -66,6 +66,12 @@ class paddleBoard:
         x, y = self.ballPos
         dx, dy = self.ballVelocity
         self.ballPos = (x + dx, y + dy)
+        
+        x, y = self.ballPos
+        if x < 0 or x > (self.boardWidth - 1):
+            self.ballVelocity = (-dx, dy)
+        if y < 0 or y > (self.boardHeight - 1):
+            self.ballVelocity = (dx, -dy)
     
     def update(self):
         pass
@@ -92,6 +98,7 @@ class paddleBoard:
                 self.render()
                 
                 self.display.render()
+                self.lastTickTime = time.perf_counter()
             
             keys = self.display.getKeys()
             if "q" in keys:
