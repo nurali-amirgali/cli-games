@@ -48,18 +48,24 @@ class paddleBoard:
         
         self.ballVelocity = (dx, dy)
     
-    def renderPaddle(self):
-        for x in range(self.paddleWidth):
-            for y in range(self.paddleHeight):
-                drawPos = (round(x + self.paddleOffsetX), round(y + self.paddleUserY))
+    def drawPaddle(self, x, y):
+        for posX in range(self.paddleWidth):
+            for posY in range(self.paddleHeight):
+                drawX = posX + x
+                drawY = posY + y
+                drawPos = (round(drawX), round(drawY))
                 self.display.draw(MOSS, drawPos)
+    
+    def renderPaddles(self):
+        self.drawPaddle(self.paddleOffsetX, self.paddleUserY)
+        self.drawPaddle(self.boardWidth - self.paddleOffsetX - self.paddleWidth, self.paddleBotY)
     
     def renderBall(self):
         drawPos = (round(self.ballPos[0]), round(self.ballPos[1]))
         self.display.draw(RED, drawPos)
     
     def render(self):
-        self.renderPaddle()
+        self.renderPaddles()
         self.renderBall()
         
     def updateBall(self):
