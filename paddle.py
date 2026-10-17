@@ -18,8 +18,8 @@ class paddleBoard:
         
         self.lastKeyTime = time.perf_counter()
         self.currentMovement = 0 # 1 is up and -1 is down
-        self.holdTime = 200 #in milliseconds
-        self.repeatTime = 100
+        self.holdTime = 400 #in milliseconds
+        self.repeatTime = 120
         self.continueHold = False
         self.nextRepeat = 0
         
@@ -29,7 +29,10 @@ class paddleBoard:
         self.paddleUserY = 10
         self.paddleBotY = 10
         self.paddleOffsetX = 2
-        self.paddleSpeed = 0.1
+        self.paddleSpeed = 0.05
+        
+        self.testTimes = []
+        self.lastKey = time.perf_counter()
         
         self.ballPos = (round(boardWidth/2), round(boardHeight/2))
         self.ballVelocity = (0.01, 0.01)
@@ -82,6 +85,8 @@ class paddleBoard:
                 elif self.currentMovement == -1:
                     self.paddleUserY =  min(self.paddleUserY + self.paddleSpeed, (self.boardHeight - self.paddleHeight))
                 
+                if self.paddleUserY == (self.boardHeight - self.paddleHeight) or self.paddleUserY == 0:
+                    self.currentMovement = 0
                 self.display.fill(BG_COLOR)
                                 
                 self.render()
@@ -92,34 +97,17 @@ class paddleBoard:
             if "q" in keys:
                 break
             
-            if "w" in keys or "UP" in keys:
-                self.lastKeyTime = time.perf_counter()
-                if not self.continueHold:
-                    self.continueHold = True
-                    self.nextRepeat = self.holdTime
-                else:
-                    if self.currentMovement == 1:
-                        self.nextRepeat = self.repeatTime
-                    else:
-                        self.nextRepeat = self.holdTime
-                self.currentMovement = 1
-            if "s" in keys or "DOWN" in keys:
-                self.lastKeyTime = time.perf_counter()
-                if not self.continueHold:
-                    self.continueHold = True
-                    self.nextRepeat = self.holdTime
-                else:
-                    if self.currentMovement == -1:
-                        self.nextRepeat = self.repeatTime
-                    else:
-                        self.nextRepeat = self.holdTime
-                self.currentMovement = -1
-            
-            if self.continueHold:
-                timePassed = time.perf_counter() - self.lastKeyTime
-                if timePassed >= (self.nextRepeat/1000):
-                    self.continueHold = False
+            if "w" in keys or "up" in keys:
+                if self.currentMovement == -1:
                     self.currentMovement = 0
-                    self.nextRepeat = 0
+                else:
+                    self.currentMovement = 1
+            if "s" in keys or "down" in keys:
+                if self.currentMovement == 1:
+                    self.currentMovement = 0
+                else:
+                    self.currentMovement = -1
+            if " " in keys:
+                self.currentMovement = 0
         
         self.display.closeDisplay()     

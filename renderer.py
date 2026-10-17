@@ -1,4 +1,4 @@
-import sys, os, select, tty, termios, re
+import sys, os, select, tty, termios, re, time
 from helpers import *
 
 KEY_PATTERN = re.compile(r"\x1b\[[ABCD]|.", re.DOTALL)
