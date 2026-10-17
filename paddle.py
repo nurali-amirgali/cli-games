@@ -36,7 +36,10 @@ class paddleBoard:
         
         self.ballPos = (round(boardWidth/2), round(boardHeight/2))
         self.ballVelocity = (0.01, 0.01)
-        self.ballSpeed = 0.1
+        self.ballSpeed = 0.3
+        
+        self.userPaddleTiles = []
+        self.botPaddleTiles = []
         
         self.randomizeBallVelocity()
     
@@ -49,17 +52,24 @@ class paddleBoard:
         self.ballVelocity = (dx, dy)
     
     def drawPaddle(self, x, y):
+        tiles = []
         for posX in range(self.paddleWidth):
             for posY in range(self.paddleHeight):
                 drawX = posX + x
                 drawY = posY + y
                 drawPos = (round(drawX), round(drawY))
-                self.display.draw(MOSS, drawPos)
+                tiles.append(drawPos)
+        return tiles
     
     def renderPaddles(self):
-        self.drawPaddle(self.paddleOffsetX, self.paddleUserY)
-        self.drawPaddle(self.boardWidth - self.paddleOffsetX - self.paddleWidth, self.paddleBotY)
-    
+        self.userPaddleTiles = self.drawPaddle(self.paddleOffsetX, self.paddleUserY)
+        self.botPaddleTiles = self.drawPaddle(self.boardWidth - self.paddleOffsetX - self.paddleWidth, self.paddleBotY)
+        for tile in self.userPaddleTiles:
+            self.display.draw(MOSS, tile)
+
+        for tile in self.botPaddleTiles:
+            self.display.draw(MOSS, tile)
+        
     def renderBall(self):
         drawPos = (round(self.ballPos[0]), round(self.ballPos[1]))
         self.display.draw(RED, drawPos)
@@ -67,17 +77,36 @@ class paddleBoard:
     def render(self):
         self.renderPaddles()
         self.renderBall()
+    
+    def isTouchingPaddle(self, x, y):
+        tile = (round(x), round(y))
+        return tile in self.userPaddleTiles or tile in self.botPaddleTiles
         
     def updateBall(self):
         x, y = self.ballPos
         dx, dy = self.ballVelocity
-        self.ballPos = (x + dx, y + dy)
         
-        x, y = self.ballPos
-        if x < 0 or x > (self.boardWidth - 1):
-            self.ballVelocity = (-dx, dy)
-        if y < 0 or y > (self.boardHeight - 1):
-            self.ballVelocity = (dx, -dy)
+        newX = x + dx
+        if self.isTouchingPaddle(newX, y):
+            dx = -dx
+            newX = x + dx
+        
+        newY = y + dy
+        if self.isTouchingPaddle(x, newY):
+            dy = -dy
+            newY = y + dy
+        
+        if newX < 0:
+            newX, dx = 0, abs(dx)
+        elif newX > self.boardWidth - 1:
+            newX, dx = self.boardWidth - 1, -abs(dx)
+        if newY < 0:
+            newY, dy = 0, abs(dy)
+        elif newY > self.boardHeight - 1:
+            newY, dy = self.boardHeight - 1, -abs(dy)
+
+        self.ballPos = (newX, newY)
+        self.ballVelocity = (dx, dy)
     
     def update(self):
         pass
