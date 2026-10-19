@@ -29,7 +29,7 @@ class paddleBoard:
         self.paddleUserY = 10
         self.paddleBotY = 10
         self.paddleOffsetX = 2
-        self.paddleSpeed = 0.1
+        self.paddleSpeed = 0.2
         
         self.testTimes = []
         self.lastKey = time.perf_counter()
@@ -40,6 +40,9 @@ class paddleBoard:
         
         self.userPaddleTiles = []
         self.botPaddleTiles = []
+        
+        self.scores = (0,0)
+        self.showBall = True
         
         self.randomizeBallVelocity()
     
@@ -61,6 +64,14 @@ class paddleBoard:
                 tiles.append(drawPos)
         return tiles
     
+    def printLabel(self, text, color, bgColor, width):
+        self.display.cursorGoToY(0)
+        textLen = max(width - len(text), 0)
+        text = (" " * math.floor(textLen/2)) + text + (" " * math.ceil(textLen/2))
+        
+        textColors = bgColor + BOLD_TEXT + color
+        print(textColors + text + RESET)
+    
     def renderPaddles(self):
         self.userPaddleTiles = self.drawPaddle(self.paddleOffsetX, self.paddleUserY)
         self.botPaddleTiles = self.drawPaddle(self.boardWidth - self.paddleOffsetX - self.paddleWidth, self.paddleBotY)
@@ -75,8 +86,10 @@ class paddleBoard:
         self.display.draw(RED, drawPos)
     
     def render(self):
+        self.printLabel(f"{self.scores[0]} - {self.scores[1]}", BLACK_TEXT, BRIGHT_BLACK, self.boardWidth * 2)
         self.renderPaddles()
-        self.renderBall()
+        if self.showBall:
+            self.renderBall()
     
     def isTouchingPaddle(self, x, y):
         tile = (round(x), round(y))
@@ -98,8 +111,12 @@ class paddleBoard:
         
         if newX < 0:
             newX, dx = 0, abs(dx)
+            self.showBall = False
+            self.scores = (self.scores[0], self.scores[1] + 1)
         elif newX > self.boardWidth - 1:
             newX, dx = self.boardWidth - 1, -abs(dx)
+            self.showBall = False
+            self.scores = (self.scores[0] + 1, self.scores[1])
         if newY < 0:
             newY, dy = 0, abs(dy)
         elif newY > self.boardHeight - 1:
@@ -119,7 +136,8 @@ class paddleBoard:
         while True:
             timePassed = time.perf_counter() - self.lastTickTime
             if timePassed >= (self.tickDelay/1000):
-                self.updateBall()
+                if self.showBall:
+                    self.updateBall()
                 
                 if self.currentMovement == 1:
                     self.paddleUserY =  max(self.paddleUserY - self.paddleSpeed, 0)
@@ -140,15 +158,17 @@ class paddleBoard:
                 break
             
             if "w" in keys or "up" in keys:
-                if self.currentMovement == -1:
-                    self.currentMovement = 0
-                else:
-                    self.currentMovement = 1
+                self.currentMovement = 1
+                #if self.currentMovement == -1:
+                #    self.currentMovement = 0
+                #else:
+                #    self.currentMovement = 1
             if "s" in keys or "down" in keys:
-                if self.currentMovement == 1:
-                    self.currentMovement = 0
-                else:
-                    self.currentMovement = -1
+                self.currentMovement = -1
+                #if self.currentMovement == 1:
+                #    self.currentMovement = 0
+                #else:
+                #    self.currentMovement = -1
             if " " in keys:
                 self.currentMovement = 0
         
