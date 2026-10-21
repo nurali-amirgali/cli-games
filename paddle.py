@@ -16,6 +16,10 @@ class paddleBoard:
         self.tickDelay = 10 #in milliseconds
         self.currentMovement = 0 # 1 is up and -1 is down
         
+        self.restartDelay = 2 #in seconds
+        self.restartTimer = time.perf_counter()
+        self.controlsLock = False
+        
         self.paddleHeight = 7
         self.paddleWidth = 1
         
@@ -37,14 +41,19 @@ class paddleBoard:
         self.waitForInput = True
         self.gameOver = False
         self.sideLost = 0
-        
+                
         self.randomizeBallVelocity()
     
     def randomizeBallVelocity(self):
-        angle = random.uniform(0, 2 * math.pi)
+        angle = random.uniform(-30, 30)
 
-        dx = math.cos(angle) * self.ballSpeed
-        dy = math.sin(angle) * self.ballSpeed
+        if random.randint(0, 1) == 0:
+            angle += 180
+
+        angleRad = math.radians(angle)
+
+        dx = math.cos(angleRad) * self.ballSpeed
+        dy = math.sin(angleRad) * self.ballSpeed
         
         self.ballVelocity = (dx, dy)
     
@@ -75,7 +84,7 @@ class paddleBoard:
         
         healthBarUser = BLACK + (HealthUserLen * " ") + RED + ((self.lives[0] * 2) * " ")
         healthBarBot = RED + ((self.lives[1] * 2) * " ") + BLACK + (HealthBotLen * " ")
-        centerBar = f"{BLACK_TEXT}{CYAN} {self.lives[0]}-{self.lives[1]} "
+        centerBar = f"{WHITE_TEXT}{BLACK} {self.lives[0]}-{self.lives[1]} "
         
         text = (BRIGHT_BLACK + " " * math.floor(padLen)) + (healthBarUser + centerBar + healthBarBot) + (BRIGHT_BLACK + " " * math.ceil(padLen))
         print(text + RESET)
@@ -94,8 +103,11 @@ class paddleBoard:
         self.display.draw(RED, drawPos)
     
     def render(self):
-        #self.printLabel(f"{self.lives[0]} - {self.lives[1]}", BLACK_TEXT, BRIGHT_BLACK, self.boardWidth * 2)
-        self.renderHealth()
+        if self.gameOver:
+            wonName = "BOT" if self.lives[0] == 0 else "YOU"
+            self.printLabel(f"{wonName} WON! press to restart", WHITE_TEXT, RED, self.boardWidth * 2)
+        else:
+            self.renderHealth()
         self.renderPaddles()
         if self.showBall:
             self.renderBall()
@@ -121,13 +133,19 @@ class paddleBoard:
         if newX < 0:
             newX, dx = 0, abs(dx)
             self.showBall = False
+            self.controlsLock = True
             self.sideLost = -1
             self.lives = (self.lives[0] - 1, self.lives[1] )
+            self.restartTimer = time.perf_counter()
+            
         elif newX > self.boardWidth - 1:
             newX, dx = self.boardWidth - 1, -abs(dx)
             self.showBall = False
+            self.controlsLock = True
             self.sideLost = 1
             self.lives = (self.lives[0], self.lives[1] - 1)
+            self.restartTimer = time.perf_counter()
+            
         if newY < 0:
             newY, dy = 0, abs(dy)
         elif newY > self.boardHeight - 1:
@@ -137,13 +155,20 @@ class paddleBoard:
         self.ballVelocity = (dx, dy)
     
     def updateGameState(self):
-        if self.sideLost != 0:
-            self.reset()
-            self.waitForInput = True
+        if self.sideLost != 0 and not self.gameOver:
+            if (time.perf_counter() - self.restartTimer) >= self.restartDelay:
+                self.reset()
+                self.waitForInput = True
+                self.controlsLock = False
         if 0 in self.lives:
             self.gameOver = True
+            self.controlsLock = True
+            self.waitForInput = True
     
     def update(self):
+        pass
+    
+    def updateBot(self):
         pass
     
     def reset(self):
@@ -174,7 +199,7 @@ class paddleBoard:
                     self.updateBall()
                 self.updateGameState()
                 
-                if not self.waitForInput:
+                if not self.waitForInput and self.sideLost == 0:
                     if self.currentMovement == 1:
                         self.paddleUserY =  max(self.paddleUserY - self.paddleSpeed, 0)
                     elif self.currentMovement == -1:
@@ -194,8 +219,15 @@ class paddleBoard:
                 break
             
             if keys:
-                if self.waitForInput:
+                if self.gameOver:
+                    self.reset()
+                    self.gameOver = False
+                    self.lives = (3,3)
+                    self.controlsLock = False
+                elif self.waitForInput and not self.controlsLock:
                     self.waitForInput = False
+            
+            if self.controlsLock: continue
             
             if "w" in keys or "up" in keys:
                 self.currentMovement = 1
