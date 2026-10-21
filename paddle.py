@@ -6,7 +6,6 @@ import math
 
 BG_COLOR = WHITE
 
-
 class paddleBoard:
     def __init__(self, boardWidth = 40, boardHeight = 20, scale = 1):
         self.boardWidth = boardWidth
@@ -15,13 +14,7 @@ class paddleBoard:
         self.display = renderer.Display(boardHeight = boardHeight, boardWidth = boardWidth, scale = self.scale, y = 1)
         self.lastTickTime = time.perf_counter()
         self.tickDelay = 10 #in milliseconds
-        
-        self.lastKeyTime = time.perf_counter()
         self.currentMovement = 0 # 1 is up and -1 is down
-        self.holdTime = 400 #in milliseconds
-        self.repeatTime = 120
-        self.continueHold = False
-        self.nextRepeat = 0
         
         self.paddleHeight = 7
         self.paddleWidth = 1
@@ -41,8 +34,12 @@ class paddleBoard:
         self.userPaddleTiles = []
         self.botPaddleTiles = []
         
-        self.scores = (0,0)
+        self.lives = (3,3)
         self.showBall = True
+        
+        self.waitForInput = True
+        self.gameOver = False
+        self.sideLost = 0
         
         self.randomizeBallVelocity()
     
@@ -72,21 +69,36 @@ class paddleBoard:
         textColors = bgColor + BOLD_TEXT + color
         print(textColors + text + RESET)
     
+    def renderHealth(self):
+        self.display.cursorGoToY(0)
+        
+        padLen = ((self.boardWidth * 2) - 17)/2
+        HealthUserLen = (3 - self.lives[0]) * 2
+        HealthBotLen = (3 - self.lives[1]) * 2
+        
+        healthBarUser = BLACK + (HealthUserLen * " ") + RED + ((self.lives[0] * 2) * " ")
+        healthBarBot = RED + ((self.lives[1] * 2) * " ") + BLACK + (HealthBotLen * " ")
+        centerBar = f"{BLACK_TEXT}{CYAN} {self.lives[0]}-{self.lives[1]} "
+        
+        text = (BRIGHT_BLACK + " " * math.floor(padLen)) + (healthBarUser + centerBar + healthBarBot) + (BRIGHT_BLACK + " " * math.ceil(padLen))
+        print(text + RESET)
+        
     def renderPaddles(self):
         self.userPaddleTiles = self.drawPaddle(self.paddleOffsetX, self.paddleUserY)
         self.botPaddleTiles = self.drawPaddle(self.boardWidth - self.paddleOffsetX - self.paddleWidth, self.paddleBotY)
         for tile in self.userPaddleTiles:
-            self.display.draw(MOSS, tile)
+            self.display.draw(RED if self.sideLost == -1 else MOSS, tile)
 
         for tile in self.botPaddleTiles:
-            self.display.draw(MOSS, tile)
+            self.display.draw(RED if self.sideLost == 1 else MOSS, tile)
         
     def renderBall(self):
         drawPos = (round(self.ballPos[0]), round(self.ballPos[1]))
         self.display.draw(RED, drawPos)
     
     def render(self):
-        self.printLabel(f"{self.scores[0]} - {self.scores[1]}", BLACK_TEXT, BRIGHT_BLACK, self.boardWidth * 2)
+        #self.printLabel(f"{self.lives[0]} - {self.lives[1]}", BLACK_TEXT, BRIGHT_BLACK, self.boardWidth * 2)
+        self.renderHealth()
         self.renderPaddles()
         if self.showBall:
             self.renderBall()
@@ -112,11 +124,13 @@ class paddleBoard:
         if newX < 0:
             newX, dx = 0, abs(dx)
             self.showBall = False
-            self.scores = (self.scores[0], self.scores[1] + 1)
+            self.sideLost = -1
+            self.lives = (self.lives[0] - 1, self.lives[1] )
         elif newX > self.boardWidth - 1:
             newX, dx = self.boardWidth - 1, -abs(dx)
             self.showBall = False
-            self.scores = (self.scores[0] + 1, self.scores[1])
+            self.sideLost = 1
+            self.lives = (self.lives[0], self.lives[1] - 1)
         if newY < 0:
             newY, dy = 0, abs(dy)
         elif newY > self.boardHeight - 1:
@@ -136,7 +150,7 @@ class paddleBoard:
         while True:
             timePassed = time.perf_counter() - self.lastTickTime
             if timePassed >= (self.tickDelay/1000):
-                if self.showBall:
+                if self.showBall and not self.sideLost:
                     self.updateBall()
                 
                 if self.currentMovement == 1:
@@ -159,16 +173,8 @@ class paddleBoard:
             
             if "w" in keys or "up" in keys:
                 self.currentMovement = 1
-                #if self.currentMovement == -1:
-                #    self.currentMovement = 0
-                #else:
-                #    self.currentMovement = 1
             if "s" in keys or "down" in keys:
                 self.currentMovement = -1
-                #if self.currentMovement == 1:
-                #    self.currentMovement = 0
-                #else:
-                #    self.currentMovement = -1
             if " " in keys:
                 self.currentMovement = 0
         
