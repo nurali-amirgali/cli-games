@@ -15,16 +15,17 @@ class paddleBoard:
         self.lastTickTime = time.perf_counter()
         self.tickDelay = 10 #in milliseconds
         self.currentMovement = 0 # 1 is up and -1 is down
+        self.speedIncrease = 1.05
         
         self.restartDelay = 2 #in seconds
         self.restartTimer = time.perf_counter()
         self.controlsLock = False
         
-        self.paddleHeight = 7
+        self.paddleHeight = 6
         self.paddleWidth = 1
         
-        self.paddleUserY = 10
-        self.paddleBotY = 10
+        self.paddleUserY = (self.boardHeight/2) - round(self.paddleHeight/2)
+        self.paddleBotY = (self.boardHeight/2) - round(self.paddleHeight/2)
         self.paddleOffsetX = 2
         self.paddleSpeed = 0.2
         
@@ -122,12 +123,12 @@ class paddleBoard:
         
         newX = x + dx
         if self.isTouchingPaddle(newX, y):
-            dx = -dx
+            dx = -dx * self.speedIncrease
             newX = x + dx
         
         newY = y + dy
         if self.isTouchingPaddle(x, newY):
-            dy = -dy
+            dy = -dy * self.speedIncrease
             newY = y + dy
         
         if newX < 0:
@@ -165,17 +166,24 @@ class paddleBoard:
             self.controlsLock = True
             self.waitForInput = True
     
-    def update(self):
-        pass
-    
     def updateBot(self):
-        pass
+        if self.ballVelocity[0] > 0:
+            target = self.ballPos[1]
+        else:
+            target = round(self.boardHeight/2)
+        delta = (self.paddleBotY - target) + round(self.paddleHeight/2)
+        if self.ballVelocity[0] < 0:
+            return
+        if delta > 0:
+            self.paddleBotY =  max(self.paddleBotY - (self.paddleSpeed * 0.8), 0) #up
+        else:
+            self.paddleBotY =  min(self.paddleBotY + (self.paddleSpeed * 0.8), (self.boardHeight - self.paddleHeight)) #down
     
     def reset(self):
         self.currentMovement = 0
         
-        self.paddleUserY = 10
-        self.paddleBotY = 10
+        self.paddleUserY = (self.boardHeight/2) - round(self.paddleHeight/2)
+        self.paddleBotY = (self.boardHeight/2) - round(self.paddleHeight/2)
         self.paddleOffsetX = 2
         self.paddleSpeed = 0.2
         
@@ -200,6 +208,7 @@ class paddleBoard:
                 self.updateGameState()
                 
                 if not self.waitForInput and self.sideLost == 0:
+                    self.updateBot()
                     if self.currentMovement == 1:
                         self.paddleUserY =  max(self.paddleUserY - self.paddleSpeed, 0)
                     elif self.currentMovement == -1:
