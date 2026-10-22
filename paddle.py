@@ -46,7 +46,10 @@ class paddleBoard:
         self.randomizeBallVelocity()
     
     def randomizeBallVelocity(self):
-        angle = random.uniform(-30, 30)
+        if random.choice([True, False]):
+            angle = random.randint(20, 50)
+        else:
+            angle = random.randint(-50, -20)
 
         if random.randint(0, 1) == 0:
             angle += 180
@@ -175,9 +178,9 @@ class paddleBoard:
         if self.ballVelocity[0] < 0:
             return
         if delta > 0:
-            self.paddleBotY =  max(self.paddleBotY - (self.paddleSpeed * 0.8), 0) #up
+            self.paddleBotY =  max(self.paddleBotY - (self.paddleSpeed * 0.7), 0) #up
         else:
-            self.paddleBotY =  min(self.paddleBotY + (self.paddleSpeed * 0.8), (self.boardHeight - self.paddleHeight)) #down
+            self.paddleBotY =  min(self.paddleBotY + (self.paddleSpeed * 0.7), (self.boardHeight - self.paddleHeight)) #down
     
     def reset(self):
         self.currentMovement = 0

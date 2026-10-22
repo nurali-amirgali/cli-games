@@ -1,11 +1,20 @@
 from helpers import *
 from snake import snakeBoard
 from paddle import paddleBoard
+import questionary
 
-#Snake = snakeBoard()
+while True:
+    print("TIP: in the game press Q at anytime to go back to the main menu")
+    choice = questionary.select(
+        "What would you like to play?",
+        choices=["snake", "paddle", "quit"]
+    ).ask()
 
-#Snake.runGame()
-
-Paddle = paddleBoard()
-
-Paddle.runGame()
+    if choice == "snake":
+        Snake = snakeBoard()
+        Snake.runGame()
+    elif choice == "paddle":
+        Paddle = paddleBoard()
+        Paddle.runGame()
+    elif choice == "quit":
+        break
