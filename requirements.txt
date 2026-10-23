@@ -1,0 +1,2 @@
+asyncssh==2.24.1
+questionary==2.1.1

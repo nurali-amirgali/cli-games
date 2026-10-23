@@ -11,6 +11,7 @@ class Display:
         self.scale = scale
         self._savedSettings = None
         self.tiles = [[WHITE] * boardWidth for _ in range(boardHeight)]
+        self.lastTiles = [[WHITE] * boardWidth for _ in range(boardHeight)]
         self.y = y
         
         self.fd = sys.stdin.fileno()
@@ -35,6 +36,9 @@ class Display:
     def cursorGoToY(self, y):
         print(f"\033[{y + 1};1H", end="", flush=True)
         
+    def cursorGoTo(self, x, y):
+        print(f"\033[{y + 1};{x + 1}H", end="", flush=True)
+        
     def cursorHome(self):
         print("\033[H", end="", flush=True)
         
@@ -56,10 +60,15 @@ class Display:
     
     def render(self):
         self.cursorGoToY(self.y)
+        out = []
         for row in range(self.boardHeight):
-            for _ in range(self.scale):
-                for col in range(self.boardWidth):
-                    for _ in range(self.scale * 2):
-                        color = self.tiles[row][col]
-                        print(f"{color} ", end='')
-                print(RESET)
+            line, last = [], None
+            for col in range(self.boardWidth):
+                color = self.tiles[row][col]
+                if color != last:
+                    line.append(color)
+                    last = color
+                line.append(" " * (self.scale * 2))
+            out.append(("".join(line) + RESET + "\n") * self.scale)
+        sys.stdout.write("".join(out))
+        sys.stdout.flush()
