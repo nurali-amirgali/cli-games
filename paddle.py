@@ -31,7 +31,8 @@ class paddleBoard:
         
         self.ballPos = (round(boardWidth/2), round(boardHeight/2))
         self.ballVelocity = (0.01, 0.01)
-        self.ballSpeed = 0.3
+        self.ballSpeed = 0.23
+        self.gameOverLock = False
         
         self.userPaddleTiles = []
         self.botPaddleTiles = []
@@ -50,9 +51,6 @@ class paddleBoard:
             angle = random.randint(20, 50)
         else:
             angle = random.randint(-50, -20)
-
-        if random.randint(0, 1) == 0:
-            angle += 180
 
         angleRad = math.radians(angle)
 
@@ -167,7 +165,11 @@ class paddleBoard:
         if 0 in self.lives:
             self.gameOver = True
             self.controlsLock = True
-            self.waitForInput = True
+            self.gameOverLock = True
+            self.waitForInput = False
+            if (time.perf_counter() - self.restartTimer) >= self.restartDelay:
+                self.waitForInput = True
+                self.gameOverLock = False
     
     def updateBot(self):
         if self.ballVelocity[0] > 0:
@@ -231,7 +233,7 @@ class paddleBoard:
                 break
             
             if keys:
-                if self.gameOver:
+                if self.gameOver and not self.gameOverLock:
                     self.reset()
                     self.gameOver = False
                     self.lives = (3,3)
