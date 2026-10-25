@@ -4,7 +4,7 @@ import renderer
 import random
 import math
 
-BG_COLOR = WHITE
+BG_COLOR = BLACK
 
 class paddleBoard:
     def __init__(self, boardWidth = 40, boardHeight = 20, scale = 1):
@@ -88,21 +88,21 @@ class paddleBoard:
         healthBarBot = RED + ((self.lives[1] * 2) * " ") + BLACK + (HealthBotLen * " ")
         centerBar = f"{WHITE_TEXT}{BLACK} {self.lives[0]}-{self.lives[1]} "
         
-        text = (BRIGHT_BLACK + " " * math.floor(padLen)) + (healthBarUser + centerBar + healthBarBot) + (BRIGHT_BLACK + " " * math.ceil(padLen))
+        text = (BLACK + " " * math.floor(padLen)) + (healthBarUser + centerBar + healthBarBot) + (BLACK + " " * math.ceil(padLen))
         print(text + RESET)
         
     def renderPaddles(self):
         self.userPaddleTiles = self.drawPaddle(self.paddleOffsetX, self.paddleUserY)
         self.botPaddleTiles = self.drawPaddle(self.boardWidth - self.paddleOffsetX - self.paddleWidth, self.paddleBotY)
         for tile in self.userPaddleTiles:
-            self.display.draw(RED if self.sideLost == -1 else MOSS, tile)
+            self.display.draw(RED if self.sideLost == -1 else WHITE, tile)
 
         for tile in self.botPaddleTiles:
-            self.display.draw(RED if self.sideLost == 1 else MOSS, tile)
+            self.display.draw(RED if self.sideLost == 1 else WHITE, tile)
         
     def renderBall(self):
         drawPos = (round(self.ballPos[0]), round(self.ballPos[1]))
-        self.display.draw(RED, drawPos)
+        self.display.draw(WHITE, drawPos)
     
     def render(self):
         if self.gameOver:
