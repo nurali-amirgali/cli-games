@@ -107,7 +107,7 @@ class paddleBoard:
     def render(self):
         if self.gameOver:
             wonName = "BOT" if self.lives[0] == 0 else "YOU"
-            self.printLabel(f"{wonName} WON! press to restart", WHITE_TEXT, RED, self.boardWidth * 2)
+            self.printLabel(f"{wonName} WON! press to restart", WHITE_TEXT, DARK_RED, self.boardWidth * 2)
         else:
             self.renderHealth()
         self.renderPaddles()
